@@ -1,4 +1,4 @@
-# こころダイアリー
+# kizuki
 
 小学生が毎日の気持ちをキャラクター「くまくん🐻」との会話で記録し、
 本人が選んだ範囲だけを先生に共有できるアプリのプロトタイプです。
@@ -28,12 +28,21 @@ npm run lint     # ESLint
 | URL | 内容 |
 | --- | --- |
 | `/` | トップ（生徒用 / 先生用の選択） |
-| `/student` | 生徒選択（デモ用の簡易ログイン） |
-| `/student/[id]` | 4種類の気持ち選択 😊😥😐😡 |
-| `/student/[id]/chat` | くまくんとの会話 → 共有範囲の選択 → 保存 |
+| `/student` | 4種類の気持ち選択 😊😥😐😡（「現在のユーザー」1人分。生徒を選ぶ画面はない） |
+| `/student/chat` | くまくんとの会話 → 共有範囲の選択 → 保存 |
 | `/teacher` | 先生用ダッシュボード（サポート候補 + 全生徒の気持ち一覧） |
 | `/teacher/students/[id]` | 生徒詳細（共有された記録のみ表示） |
-| `/debug` | 開発用モード専用：内部判定と先生表示の比較 |
+| `/debug` | 開発用モード専用：ユーザー切り替え、内部判定と先生表示の比較 |
+
+### 生徒用画面は「特定の一人が使う」前提
+
+`/student` は端末（またはブラウザ）ごとに特定の生徒が使うことを想定しており、
+複数人から自分を選ぶ画面は持ちません。「今のユーザーが誰か」は Cookie
+（`kizuki_student_id`）で識別し、未設定時はデモの先頭の生徒がデフォルトになります。
+
+開発中にユーザーを切り替えたい場合は `/debug` 画面の「ユーザー切り替え」から
+生徒を選ぶと、以降 `/student` はその生徒として動作します（本番では
+`DEBUG_MODE=false` にしてこの切り替え自体を無効化してください）。
 
 ## ルールベース版と生成AI版の切り替え（Phase 2 準備）
 
@@ -67,7 +76,7 @@ CONVERSATION_MODE=rule  # rule / ai
 AI_API_KEY=             # Phase 2 で設定（サーバー側のみで使用。ブラウザへ公開しない）
 AI_MODEL=               # Phase 2 で使用するモデル名
 DEBUG_MODE=true         # 開発用デバッグ表示（本番では false にする）
-# KOKORO_DB_PATH=       # SQLite の保存先（省略時 ./data/kokoro.db）
+# KIZUKI_DB_PATH=       # SQLite の保存先（省略時 ./data/kizuki.db）
 ```
 
 APIキーはサーバー側のAPIルート（`src/app/api/*`）内でのみ参照します。
@@ -89,10 +98,12 @@ src/
     support/        # サポート候補判定（SUPPORT_RULES で条件を一元管理）
     teacher/        # 共有範囲に基づく先生向け表示のフィルタリング
     db/             # SQLite（better-sqlite3）
+    current-student.ts  # 「現在のユーザー」の Cookie 解決
   app/
-    api/conversation  # 会話を1往復進める
-    api/entries       # 記録の保存（要約・検出はサーバー側で実行）
-    api/debug/entries # 開発用モード専用
+    api/conversation      # 会話を1往復進める
+    api/entries           # 記録の保存（要約・検出はサーバー側で実行）
+    api/debug/entries      # 開発用モード専用
+    api/debug/current-student # 開発用モード専用：ユーザー切り替え
     student/ teacher/ debug/
 ```
 
@@ -126,7 +137,7 @@ src/
 
 `DEBUG_MODE=true`（または開発サーバー）のとき:
 
-- `/debug` — 全記録の内部情報（質問の通過順・分岐・検出キーワード・カテゴリー・相談遷移理由・非共有情報）と、先生画面に実際に表示される内容の比較
+- `/debug` — 「生徒用画面のユーザー切り替え」+ 全記録の内部情報（質問の通過順・分岐・検出キーワード・カテゴリー・相談遷移理由・非共有情報）と、先生画面に実際に表示される内容の比較
 - 生徒チャット画面下部 — 各ターンの分岐・検出カテゴリー
 - `/api/conversation` のレスポンスに `debug` フィールドが付与
 

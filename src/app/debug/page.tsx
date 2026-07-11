@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { CATEGORY_LABELS, MOODS, SHARE_SCOPE_LABELS } from "@/lib/conversation/constants";
 import { isDebugEnabled } from "@/lib/debug";
+import { getCurrentStudentId } from "@/lib/current-student";
 import {
   getEntryMessages,
   getStudent,
   listAllEntries,
+  listStudents,
 } from "@/lib/db/repository";
 import { toTeacherEntryView } from "@/lib/teacher/view";
+import UserSwitcher from "./UserSwitcher";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +17,9 @@ export const dynamic = "force-dynamic";
  * 開発用モード専用のデバッグ画面。
  * 各記録について、内部的な判定（キーワード・カテゴリー・分岐・非共有情報）と、
  * 先生画面に実際に表示される内容を比較できる。
+ * 生徒用画面（/student）のユーザー切り替えもここでのみ行える。
  */
-export default function DebugPage() {
+export default async function DebugPage() {
   if (!isDebugEnabled()) {
     return (
       <main className="flex-1 flex items-center justify-center p-6">
@@ -27,6 +31,8 @@ export default function DebugPage() {
   }
 
   const entries = listAllEntries();
+  const students = listStudents();
+  const currentStudentId = await getCurrentStudentId();
 
   return (
     <main className="flex-1 w-full max-w-5xl mx-auto p-6 space-y-6 bg-slate-900 text-slate-100 min-h-screen">
@@ -40,6 +46,8 @@ export default function DebugPage() {
         全記録の内部情報（非共有を含む）と、先生側に実際に表示される内容の比較。
         この画面は通常の生徒画面・先生画面には存在しません。
       </p>
+
+      <UserSwitcher students={students} currentStudentId={currentStudentId} />
 
       {entries.map((entry) => {
         const teacherView = toTeacherEntryView(entry);
