@@ -8,12 +8,32 @@ export const MAX_TURNS = 6;
 
 export const MOODS: Record<
   Mood,
-  { label: string; emoji: string; negative: boolean }
+  { label: string; emoji: string; image: string; negative: boolean }
 > = {
-  ureshii: { label: 'うれしい', emoji: '😊', negative: false },
-  kanashii: { label: 'かなしい', emoji: '😥', negative: true },
-  futsuu: { label: 'ふつう', emoji: '😐', negative: false },
-  okotteiru: { label: 'おこっている', emoji: '😡', negative: true },
+  ureshii: {
+    label: 'うれしい',
+    emoji: '😊',
+    image: '/moods/ureshii.png',
+    negative: false,
+  },
+  kanashii: {
+    label: 'かなしい',
+    emoji: '😥',
+    image: '/moods/kanashii.png',
+    negative: true,
+  },
+  futsuu: {
+    label: 'ふつう',
+    emoji: '😐',
+    image: '/moods/futsuu.png',
+    negative: false,
+  },
+  okotteiru: {
+    label: 'おこっている',
+    emoji: '😡',
+    image: '/moods/okotteiru.png',
+    negative: true,
+  },
 };
 
 export const MOOD_LABEL_TO_KEY: Record<string, Mood> = Object.fromEntries(

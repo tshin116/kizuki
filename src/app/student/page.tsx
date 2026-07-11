@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { MOODS } from "@/lib/conversation/constants";
 import type { Mood } from "@/lib/conversation/types";
@@ -47,7 +48,13 @@ export default async function MoodSelectPage() {
             href={`/student/chat?mood=${key}`}
             className="rounded-3xl bg-white border-4 border-amber-200 p-6 text-center shadow hover:border-amber-400 hover:shadow-lg transition"
           >
-            <div className="text-6xl mb-2">{MOODS[key].emoji}</div>
+            <Image
+              src={MOODS[key].image}
+              alt={MOODS[key].label}
+              width={96}
+              height={96}
+              className="mx-auto mb-2 h-24 w-24 object-contain"
+            />
             <div className="text-lg font-bold text-amber-900">
               {MOODS[key].label}
             </div>

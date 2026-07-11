@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -164,8 +165,15 @@ export default function ChatScreen({ studentId, studentName, mood }: Props) {
           <span className="text-3xl">{CHARACTER_EMOJI}</span>
           <span className="font-bold text-amber-900">{CHARACTER_NAME}</span>
         </div>
-        <div className="text-sm text-slate-600">
-          {studentName}さん {MOODS[mood].emoji}
+        <div className="flex items-center gap-1 text-sm text-slate-600">
+          {studentName}さん
+          <Image
+            src={MOODS[mood].image}
+            alt={MOODS[mood].label}
+            width={28}
+            height={28}
+            className="h-7 w-7 object-contain"
+          />
         </div>
       </header>
 
