@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "こころダイアリー",
+  title: "kizuki",
   description: "毎日の気持ちを記録して、困ったときに相談できるアプリ",
 };
 

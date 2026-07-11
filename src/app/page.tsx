@@ -12,7 +12,7 @@ export default function Home() {
     <main className="flex-1 flex flex-col items-center justify-center gap-8 p-6">
       <div className="text-center">
         <div className="text-6xl mb-3">🐻</div>
-        <h1 className="text-3xl font-bold text-amber-900">こころダイアリー</h1>
+        <h1 className="text-3xl font-bold text-amber-900">kizuki</h1>
         <p className="mt-2 text-amber-800">
           まいにちの気もちを、くまくんとお話ししながら記録しよう
         </p>

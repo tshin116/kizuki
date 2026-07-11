@@ -43,8 +43,8 @@ CREATE INDEX IF NOT EXISTS idx_messages_entry ON messages(entry_id, seq);
 
 function createDb(): Database.Database {
   const dbPath =
-    process.env.KOKORO_DB_PATH ??
-    path.join(process.cwd(), 'data', 'kokoro.db');
+    process.env.KIZUKI_DB_PATH ??
+    path.join(process.cwd(), 'data', 'kizuki.db');
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
@@ -55,12 +55,12 @@ function createDb(): Database.Database {
 // Next.js の開発サーバーはモジュールを再読み込みするため、
 // グローバルにキャッシュして接続を1つに保つ
 const globalForDb = globalThis as unknown as {
-  __kokoroDb?: Database.Database;
+  __kizukiDb?: Database.Database;
 };
 
 export function getDb(): Database.Database {
-  if (!globalForDb.__kokoroDb) {
-    globalForDb.__kokoroDb = createDb();
+  if (!globalForDb.__kizukiDb) {
+    globalForDb.__kizukiDb = createDb();
   }
-  return globalForDb.__kokoroDb;
+  return globalForDb.__kizukiDb;
 }
