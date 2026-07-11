@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getConversationMode } from "@/lib/conversation";
+import { CHARACTER_DEFAULT_IMAGE, CHARACTER_NAME } from "@/lib/conversation/constants";
 import { isDebugEnabled } from "@/lib/debug";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +13,17 @@ export default function Home() {
   return (
     <main className="flex-1 flex flex-col items-center justify-center gap-8 p-6">
       <div className="text-center">
-        <div className="text-6xl mb-3">🐻</div>
+        <Image
+          src={CHARACTER_DEFAULT_IMAGE}
+          alt={CHARACTER_NAME}
+          width={120}
+          height={120}
+          className="mx-auto mb-3 h-28 w-28 object-contain"
+          priority
+        />
         <h1 className="text-3xl font-bold text-amber-900">kizuki</h1>
         <p className="mt-2 text-amber-800">
-          まいにちの気もちを、くまくんとお話ししながら記録しよう
+          まいにちの気もちを、{CHARACTER_NAME}とお話ししながら記録しよう
         </p>
       </div>
 

@@ -1,6 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MOODS } from "@/lib/conversation/constants";
+import {
+  CHARACTER_DEFAULT_IMAGE,
+  CHARACTER_NAME,
+  MOODS,
+} from "@/lib/conversation/constants";
 import type { Mood } from "@/lib/conversation/types";
 import { getCurrentStudentId } from "@/lib/current-student";
 import { getStudent } from "@/lib/db/repository";
@@ -34,7 +38,13 @@ export default async function MoodSelectPage() {
   return (
     <main className="flex-1 flex flex-col items-center justify-center gap-8 p-6">
       <div className="text-center">
-        <div className="text-5xl mb-2">🐻</div>
+        <Image
+          src={CHARACTER_DEFAULT_IMAGE}
+          alt={CHARACTER_NAME}
+          width={100}
+          height={100}
+          className="mx-auto mb-2 h-24 w-24 object-contain"
+        />
         <h1 className="text-2xl font-bold text-amber-900">
           {student.name}さん、こんにちは！
         </h1>

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CHARACTER_EMOJI,
+  CHARACTER_IMAGES,
   CHARACTER_NAME,
   MOODS,
   SCHOOL_STAFF_TARGETS,
@@ -18,14 +18,14 @@ import type {
   ShareScope,
 } from "@/lib/conversation/types";
 
-const ERROR_MESSAGE = "くまくんが少し考え中みたい。もう一度ためしてみよう。";
+const ERROR_MESSAGE = `${CHARACTER_NAME}が少し考え中みたい。もう一度ためしてみよう。`;
 const INPUT_MAX_LENGTH = 200;
 
 const SHARE_SCOPE_DESCRIPTIONS: Record<ShareScope, string> = {
   none: "今日のお話は、先生にはつたえないよ",
   mood_only: "今日の気もち（かお）だけ、先生につたわるよ",
   summary: "気もちと、お話のかんたんなまとめが先生につたわるよ",
-  full: "気もちと、くまくんとのお話がぜんぶ先生につたわるよ",
+  full: `気もちと、${CHARACTER_NAME}とのお話がぜんぶ先生につたわるよ`,
 };
 
 interface Props {
@@ -158,11 +158,20 @@ export default function ChatScreen({ studentId, studentName, mood }: Props) {
     consultationTarget !== undefined &&
     SCHOOL_STAFF_TARGETS.includes(consultationTarget);
 
+  // 生徒が選んだ気持ちに合わせて、きづきんの表情を切り替える
+  const characterImage = CHARACTER_IMAGES[mood];
+
   return (
     <main className="flex-1 flex flex-col max-w-2xl w-full mx-auto p-4">
       <header className="flex items-center justify-between pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-3xl">{CHARACTER_EMOJI}</span>
+          <Image
+            src={characterImage}
+            alt={CHARACTER_NAME}
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain"
+          />
           <span className="font-bold text-amber-900">{CHARACTER_NAME}</span>
         </div>
         <div className="flex items-center gap-1 text-sm text-slate-600">
@@ -184,7 +193,13 @@ export default function ChatScreen({ studentId, studentName, mood }: Props) {
           .map((m, i) =>
             m.role === "character" ? (
               <div key={i} className="flex items-start gap-2">
-                <span className="text-2xl shrink-0">{CHARACTER_EMOJI}</span>
+                <Image
+                  src={characterImage}
+                  alt={CHARACTER_NAME}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 shrink-0 object-contain"
+                />
                 <div className="rounded-2xl rounded-tl-none bg-white border-2 border-amber-200 px-4 py-3 shadow-sm max-w-[80%]">
                   {m.content}
                 </div>
@@ -200,7 +215,13 @@ export default function ChatScreen({ studentId, studentName, mood }: Props) {
 
         {loading && (
           <div className="flex items-start gap-2">
-            <span className="text-2xl shrink-0">{CHARACTER_EMOJI}</span>
+            <Image
+              src={characterImage}
+              alt={CHARACTER_NAME}
+              width={32}
+              height={32}
+              className="h-8 w-8 shrink-0 object-contain"
+            />
             <div className="rounded-2xl bg-white border-2 border-amber-100 px-4 py-3 text-slate-400">
               …
             </div>
@@ -333,7 +354,13 @@ export default function ChatScreen({ studentId, studentName, mood }: Props) {
       {/* 完了 */}
       {phase === "done" && (
         <div className="rounded-3xl bg-white border-4 border-amber-200 p-8 text-center space-y-4 shadow-lg">
-          <div className="text-5xl">🐻🌟</div>
+          <Image
+            src={CHARACTER_IMAGES.ureshii}
+            alt={CHARACTER_NAME}
+            width={100}
+            height={100}
+            className="mx-auto h-24 w-24 object-contain"
+          />
           <p className="text-xl font-bold text-amber-900">きろくできたよ！</p>
           <p className="text-slate-600">また明日も、気もちをきかせてね。</p>
           <Link

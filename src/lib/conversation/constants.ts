@@ -1,7 +1,17 @@
 import type { Category, Mood, QuestionType } from './types';
 
-export const CHARACTER_NAME = 'くまくん';
-export const CHARACTER_EMOJI = '🐻';
+export const CHARACTER_NAME = 'きづきん';
+
+/** きづきん（Kizuki マスコット）の表情イラスト。生徒が選んだ気持ちに合わせて切り替える */
+export const CHARACTER_IMAGES: Record<Mood, string> = {
+  ureshii: '/character/ureshii.png',
+  kanashii: '/character/kanashii.png',
+  futsuu: '/character/futsuu.png',
+  okotteiru: '/character/okotteiru.png',
+};
+
+/** 気持ちが決まっていない場面（トップページ・気持ち選択前）で使うデフォルト表情 */
+export const CHARACTER_DEFAULT_IMAGE = CHARACTER_IMAGES.futsuu;
 
 /** 会話の最大往復数（気持ち選択は含まない） */
 export const MAX_TURNS = 6;
