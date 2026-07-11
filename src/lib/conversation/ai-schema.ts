@@ -63,6 +63,11 @@ export interface AiOutputCheckResult {
   reason: string | null;
 }
 
+/** 禁止表現が含まれていれば、その表現を返す（含まれていなければ null） */
+export function containsForbiddenExpression(text: string): string | null {
+  return FORBIDDEN_EXPRESSIONS.find((f) => text.includes(f)) ?? null;
+}
+
 /**
  * AI出力の検証。
  * 1. JSONとしてパースできるか
@@ -82,10 +87,9 @@ export function validateAiOutput(raw: string): AiOutputCheckResult {
     return { ok: false, value: null, reason: 'schema_mismatch' };
   }
 
-  for (const forbidden of FORBIDDEN_EXPRESSIONS) {
-    if (result.data.reply.includes(forbidden)) {
-      return { ok: false, value: null, reason: `forbidden:${forbidden}` };
-    }
+  const forbidden = containsForbiddenExpression(result.data.reply);
+  if (forbidden) {
+    return { ok: false, value: null, reason: `forbidden:${forbidden}` };
   }
 
   return { ok: true, value: result.data, reason: null };

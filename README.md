@@ -44,13 +44,13 @@ npm run lint     # ESLint
 生徒を選ぶと、以降 `/student` はその生徒として動作します（本番では
 `DEBUG_MODE=false` にしてこの切り替え自体を無効化してください）。
 
-## ルールベース版と生成AI版の切り替え（Phase 2 準備）
+## ルールベース版と生成AI版の切り替え（Phase 2）
 
 `.env.local` の `CONVERSATION_MODE` で切り替えます。
 
 ```env
 CONVERSATION_MODE=rule   # Phase 1: ルールベース（既定）
-CONVERSATION_MODE=ai     # Phase 2: 生成AI（現在はモック。ルールベースへ委譲）
+CONVERSATION_MODE=ai     # Phase 2: 生成AI（Claude API）
 ```
 
 両モードは共通インターフェース `ConversationService`
@@ -64,17 +64,48 @@ analyzeConversation(messages) # キーワード検出・参考カテゴリー・
 ```
 
 - `src/lib/conversation/rule-based-service.ts` — Phase 1 実装
-- `src/lib/conversation/ai-service.ts` — Phase 2 実装（モック。API キー未設定時・エラー時はルールベースへフォールバック）
+- `src/lib/conversation/ai-service.ts` — Phase 2 実装（Claude API を使用）
+- `src/lib/conversation/claude-client.ts` — サーバー専用の Claude API クライアント
 - `src/lib/conversation/index.ts` — 環境変数によるファクトリ
 - `src/lib/conversation/prompts/child-support-system-prompt.ts` — システムプロンプト（UI から分離）
 - `src/lib/conversation/ai-schema.ts` — AI 出力の JSON スキーマ検証・禁止表現チェック・安全な固定メッセージ
+
+### Phase 2 の設計：生成AIが書き換えられるのは「文面」だけ
+
+`AIConversationService.getNextResponse` は、まず `RuleBasedConversationService`
+（Phase 1 のルールエンジン）で次の状態を決定する。これにより次の項目は
+**常にアプリ側（ルールエンジン）が決定**し、生成AIは一切関与できない。
+
+- 質問の選択肢・自由入力欄の有無
+- 会話の終了（`isEnd`）・最大会話回数
+- 「今日はここまで」「今は話したくない」の受け入れ
+- 強い苦痛の可能性を検出したときの相談質問への遷移
+- 相談質問に対する締めの文面
+
+生成AIが書き換えてよいのは、上記の判定結果に対する **「reply（返答の文面）」のみ**。
+対象は `shouldUseAiRewrite()`（`ai-service.ts`）が許可した分岐
+（初回質問と通常フローの質問のみ）に限られ、終了・相談・強い苦痛検出などの
+固定文言は常にルールベースのまま表示される。
+
+生成AIの出力は以下の順で検証し、いずれかに失敗した場合はルールベースの
+文面へ無音でフォールバックする（子どもには「くまくんが少し考え中みたい」の
+ような表示すら不要なほど自然に継続する）。
+
+1. `zodOutputFormat` による JSON スキーマ検証（`ai-schema.ts` の `aiOutputSchema`）
+2. 返ってきた `questionType` がアプリ側の決定と一致するか
+3. 文字数制限（`AI_REPLY_MAX_LENGTH`）以内か
+4. 禁止表現（`FORBIDDEN_EXPRESSIONS`）を含まないか
+
+要約（`createSummary`）と参考カテゴリー抽出（`analyzeConversation`）は、
+Phase 2 でも意図的にルールベースのままにしている。「情報がない場合は推測で
+補わない」という安全要件を、テンプレート処理なら機械的に保証できるため。
 
 ### 環境変数
 
 ```env
 CONVERSATION_MODE=rule  # rule / ai
-AI_API_KEY=             # Phase 2 で設定（サーバー側のみで使用。ブラウザへ公開しない）
-AI_MODEL=               # Phase 2 で使用するモデル名
+AI_API_KEY=             # Phase 2 で使用する Claude API キー（サーバー側のみで使用。ブラウザへ公開しない）
+AI_MODEL=               # 既定は claude-sonnet-5
 DEBUG_MODE=true         # 開発用デバッグ表示（本番では false にする）
 # KIZUKI_DB_PATH=       # SQLite の保存先（省略時 ./data/kizuki.db）
 ```
@@ -143,11 +174,20 @@ src/
 
 通常の生徒画面・先生画面には内部的な判定・スコアは表示されません。
 
-## Phase 2 で行うこと
+## Phase 2 を有効にする
 
-1. `AIConversationService` に生成AI API呼び出しを実装
-   （タイムアウト・再試行・ルールベースへのフォールバック・
-   `validateAiOutput` によるスキーマ/禁止表現検証）
-2. `.env.local` に `AI_API_KEY` / `AI_MODEL` を設定し `CONVERSATION_MODE=ai` へ
-3. 最大会話回数・終了条件・共有範囲・アクセス制御・ログ保存は
-   引き続きアプリ側（APIルート + `teacher/view.ts`）が管理し、AIに委ねない
+1. `.env.local` に Claude API キーを設定する
+
+   ```env
+   AI_API_KEY=sk-ant-...
+   AI_MODEL=claude-sonnet-5
+   CONVERSATION_MODE=ai
+   ```
+
+2. `npm run dev`（または `build && start`）を再起動する
+
+タイムアウト（12秒）・自動再試行（`claude-client.ts` の `maxRetries`）・
+APIエラー時やスキーマ検証失敗時のルールベースへのフォールバックはすべて
+組み込み済み。最大会話回数・終了条件・共有範囲・アクセス制御・ログ保存は
+引き続きアプリ側（APIルート + `teacher/view.ts` + ルールエンジン）が管理し、
+生成AIには委ねない。

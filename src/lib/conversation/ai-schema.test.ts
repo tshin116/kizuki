@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateAiOutput } from './ai-schema';
+import { containsForbiddenExpression, validateAiOutput } from './ai-schema';
 
 const validOutput = JSON.stringify({
   reply: 'そうだったんだね。そのとき、どんな気持ちだった？',
@@ -38,5 +38,15 @@ describe('validateAiOutput（Phase 2 用）', () => {
     const result = validateAiOutput(forbidden);
     expect(result.ok).toBe(false);
     expect(result.reason).toContain('forbidden');
+  });
+});
+
+describe('containsForbiddenExpression', () => {
+  it('禁止表現を検出する', () => {
+    expect(containsForbiddenExpression('絶対に大丈夫だよ')).toBe('絶対に大丈夫');
+  });
+
+  it('問題ない文章では null を返す', () => {
+    expect(containsForbiddenExpression('そうだったんだね。')).toBeNull();
   });
 });
